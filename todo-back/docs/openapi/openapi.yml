@@ -1,0 +1,71 @@
+openapi: 3.1.0
+info:
+  title: TK.Tasks API
+  version: 0.1.0
+  description: API contract for TK.Tasks backend scaffold.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+paths:
+  /check:
+    get:
+      tags: [system]
+      summary: Liveness check
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckResponse"
+  /api/v1:
+    get:
+      tags: [api]
+      summary: Front-to-back API root
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+  /srv/v1:
+    get:
+      tags: [service]
+      summary: Back-to-back API root
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+  /admin/v1:
+    get:
+      tags: [admin]
+      summary: Admin API root
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+components:
+  schemas:
+    CheckResponse:
+      type: object
+      required: [status, time]
+      properties:
+        status:
+          type: string
+          example: ok
+        time:
+          type: string
+          format: date-time
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string

@@ -1,0 +1,2 @@
+-- Rollback for initial scaffold migration.
+-- Keep pgcrypto extension because it can be shared by other database objects.

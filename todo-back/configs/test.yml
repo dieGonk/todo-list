@@ -1,0 +1,21 @@
+app:
+  name: todo-back
+  env: test
+
+http:
+  host: 127.0.0.1
+  port: 0
+  read_timeout: 2s
+  write_timeout: 2s
+  idle_timeout: 10s
+
+postgres:
+  host: localhost
+  port: 5432
+  database: todo_test
+  user: todo
+  password: todo
+  ssl_mode: disable
+  max_conns: 2
+  min_conns: 0
+  max_conn_lifetime: 5m
