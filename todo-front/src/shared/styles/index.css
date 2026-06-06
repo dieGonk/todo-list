@@ -108,6 +108,11 @@ svg {
     align-items: center;
     gap: 13px;
     margin-bottom: 30px;
+    border-radius: 14px;
+    transition: opacity 0.16s;
+}
+.brand:hover {
+    opacity: 0.86;
 }
 .brand__mark {
     width: 42px;
@@ -145,32 +150,69 @@ svg {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 13px;
     min-height: 44px;
     padding: 0 13px;
     border-radius: 13px;
     color: var(--text-2);
     font-weight: 600;
     font-size: 14px;
+    transition:
+        background 0.16s,
+        color 0.16s;
+}
+.nav-item svg {
+    flex: none;
+    opacity: 0.9;
 }
 .nav-item:hover {
-    background: var(--surface-2);
+    background: var(--surface);
     color: var(--text);
 }
 .nav-item.active {
-    background: var(--surface);
-    color: var(--gold-2);
-    box-shadow: var(--shadow-card);
+    background: var(--surface-2);
+    color: var(--text);
 }
 .nav-item.active::before {
     content: "";
     position: absolute;
-    left: 0;
-    top: 12px;
-    bottom: 12px;
-    width: 3px;
-    border-radius: 3px;
+    left: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 22px;
+    border-radius: 0 4px 4px 0;
     background: var(--gold);
+}
+.nav-item.active svg {
+    color: var(--gold);
+    opacity: 1;
+}
+.nav-count {
+    min-width: 24px;
+    margin-left: auto;
+    padding: 1px 9px;
+    border-radius: 20px;
+    background: var(--surface-3);
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    text-align: center;
+}
+.nav-item.active .nav-count {
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+.nav-category-dot {
+    width: 20px;
+    display: grid;
+    place-items: center;
+    flex: none;
+}
+.nav-category-dot .cat-dot {
+    width: 9px;
+    height: 9px;
 }
 .sidebar__spacer {
     flex: 1;
@@ -182,57 +224,86 @@ svg {
     flex-direction: column;
 }
 .topbar {
-    min-height: 86px;
+    min-height: 85px;
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 18px 32px;
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--line);
+    flex: none;
 }
 .greet {
+    min-width: 0;
     margin-right: auto;
 }
 .greet h1 {
     font-family: var(--display);
-    font-size: clamp(24px, 3vw, 32px);
-    letter-spacing: -0.04em;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
 }
 .greet p {
-    margin-top: 4px;
+    margin-top: 2px;
     color: var(--text-3);
     text-transform: capitalize;
     font-size: 13px;
 }
 .search {
-    width: min(360px, 34vw);
-    height: 46px;
+    width: 300px;
+    height: 44px;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 0 15px;
+    padding: 0 14px;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 15px;
+    border-radius: 13px;
     color: var(--text-3);
+    transition:
+        border 0.16s,
+        background 0.16s;
 }
 .search:focus-within {
     border-color: var(--gold-line);
+    background: var(--surface-2);
+}
+.search svg {
+    width: 18px;
+    height: 18px;
+    color: var(--text-3);
+    flex: none;
 }
 .search input {
     flex: 1;
     min-width: 0;
     background: transparent;
     color: var(--text);
+    font-size: 14px;
+}
+.search input::placeholder {
+    color: var(--text-3);
 }
 .icon-btn,
 .avatar-btn {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
     display: grid;
     place-items: center;
-    border-radius: 15px;
+    flex: none;
+    border-radius: 13px;
     background: var(--surface);
     border: 1px solid var(--line);
     color: var(--text-2);
+    transition: 0.16s;
+}
+.icon-btn:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+.icon-btn svg {
+    width: 19px;
+    height: 19px;
 }
 .avatar-btn img {
     width: 32px;
@@ -240,9 +311,9 @@ svg {
     border-radius: 50%;
 }
 .content-scroll {
-    height: calc(100vh - 86px);
+    height: calc(100vh - 85px);
     overflow: auto;
-    padding: 12px 32px 44px;
+    padding: 24px 32px 44px;
 }
 .mobile-search,
 .mobile-nav {
