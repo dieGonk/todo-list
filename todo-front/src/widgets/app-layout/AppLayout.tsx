@@ -63,14 +63,6 @@ export const AppLayout = () => {
           ))}
         </nav>
         <div className="sidebar__spacer" />
-        <div className="pro-card">
-          <h4>✨ TK Pro</h4>
-          <p>
-            Безлимит задач, умные напоминания и синхронизация на всех
-            устройствах.
-          </p>
-          <button>Перейти на Pro</button>
-        </div>
       </aside>
       <main className="main">
         <header className="topbar">
