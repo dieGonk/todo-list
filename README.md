@@ -69,12 +69,30 @@ Raw OpenAPI YAML:
 http://localhost:8080/docs/openapi.yml
 ```
 
-### 4. Запустить frontend
+### 4. Настроить frontend env
 
 В отдельном терминале:
 
 ```bash
 cd todo-front
+cp .env.example .env
+```
+
+По умолчанию frontend будет обращаться к backend по адресу:
+
+```txt
+http://localhost:8080/api/v1
+```
+
+Если backend запущен по другому адресу, измени `todo-front/.env`:
+
+```env
+VITE_API_URL=https://api.example.com/api/v1
+```
+
+### 5. Запустить frontend
+
+```bash
 npm install
 npm run dev
 ```
@@ -133,7 +151,7 @@ npm run preview
 npm run lint
 ```
 
-Frontend сейчас использует временный RTK Query adapter с `localStorage`. Когда backend API будет готов, слой `todo-front/src/entities/task/api/tasksApi.ts` можно будет переключить на HTTP-запросы к `todo-back`.
+Frontend использует RTK Query и обращается к backend API по адресу из переменной окружения `VITE_API_URL`. Если переменная не задана, используется fallback `http://localhost:8080/api/v1`.
 
 ## Проверки
 
@@ -158,6 +176,30 @@ cd todo-front
 npm run build
 ```
 
+## Environment variables
+
+### Frontend
+
+Файл локальной конфигурации:
+
+```txt
+todo-front/.env
+```
+
+Пример:
+
+```env
+VITE_API_URL=http://localhost:8080/api/v1
+```
+
+Важно: в Vite переменные окружения, доступные в browser-коде, должны начинаться с `VITE_`.
+
+Также важно: `VITE_API_URL` подставляется на этапе сборки frontend. Для production build нужно задавать её перед `npm run build`:
+
+```bash
+VITE_API_URL=https://api.example.com/api/v1 npm run build
+```
+
 ## Полезные URL
 
 ```txt
@@ -178,6 +220,6 @@ make db-down
 
 ## Примечания
 
-- `todo-back` сейчас является backend scaffold без доменных сущностей.
-- `todo-front` уже содержит базовый UI и временное хранение задач в `localStorage`.
-- Доменные API, миграции таблиц и подключение frontend к backend будут добавляться следующими этапами.
+- `todo-back` содержит базовый API управления задачами и подзадачами.
+- `todo-front` использует backend API через RTK Query.
+- Перед запуском backend нужно поднять PostgreSQL и применить миграции.

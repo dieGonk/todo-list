@@ -12,6 +12,8 @@ import (
 	"todo-back/internal/config"
 	"todo-back/internal/infrastructure/postgres"
 	"todo-back/internal/interfaces/http/router"
+	taskrepo "todo-back/internal/repository/task"
+	taskusecase "todo-back/internal/usecase/task"
 )
 
 type App struct {
@@ -27,8 +29,12 @@ func New(ctx context.Context, cfg *config.Config, log *slog.Logger) (*App, error
 		return nil, err
 	}
 
+	taskRepository := taskrepo.NewPostgresRepository(db)
+	taskService := taskusecase.NewService(taskRepository)
+
 	httpRouter := router.New(router.Dependencies{
-		Log: log,
+		Log:         log,
+		TaskUseCase: taskService,
 	})
 
 	server := &http.Server{

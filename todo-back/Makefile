@@ -32,13 +32,13 @@ db-logs: ## Follow PostgreSQL logs
 	docker compose logs -f postgres
 
 migrate-up: ## Apply all database migrations
-	docker compose run --rm migrate -path=$(MIGRATIONS_DIR) -database "$(DATABASE_URL)" up
+	docker compose run -T --rm migrate -path=$(MIGRATIONS_DIR) -database "$(DATABASE_URL)" up
 
 migrate-down: ## Rollback one database migration
-	docker compose run --rm migrate -path=$(MIGRATIONS_DIR) -database "$(DATABASE_URL)" down 1
+	docker compose run -T --rm migrate -path=$(MIGRATIONS_DIR) -database "$(DATABASE_URL)" down 1
 
 migrate-force: ## Force migration version, usage: make migrate-force VERSION=1
-	docker compose run --rm migrate -path=$(MIGRATIONS_DIR) -database "$(DATABASE_URL)" force $(VERSION)
+	docker compose run -T --rm migrate -path=$(MIGRATIONS_DIR) -database "$(DATABASE_URL)" force $(VERSION)
 
 migrate-create: ## Create migration files, usage: make migrate-create NAME=create_users
-	docker compose run --rm migrate create -ext sql -dir $(MIGRATIONS_DIR) -seq $(NAME)
+	docker compose run -T --rm migrate create -ext sql -dir $(MIGRATIONS_DIR) -seq $(NAME)

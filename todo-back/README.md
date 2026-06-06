@@ -1,6 +1,6 @@
 # todo-back
 
-Backend scaffold for `TK.Tasks` built with Go, chi, PostgreSQL and clean architecture.
+Backend for `TK.Tasks` built with Go, chi, PostgreSQL and clean architecture.
 
 ## Requirements
 
@@ -59,7 +59,7 @@ http://localhost:8080/docs/openapi.yml
 
 ## Architecture
 
-The project is organized as clean architecture layers. The scaffold keeps layer directories ready, but domain-specific entities/usecases/repositories are added only when a feature is implemented.
+The project is organized as clean architecture layers. Task management is implemented through domain, usecase, repository and HTTP adapter layers.
 
 - `internal/domain` — enterprise/domain entities and value objects.
 - `internal/usecase` — application business rules and ports.

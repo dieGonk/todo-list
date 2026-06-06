@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: TK.Tasks API
   version: 0.1.0
-  description: API contract for TK.Tasks backend scaffold.
+  description: API contract for TK.Tasks backend.
 servers:
   - url: http://localhost:8080
     description: Local development
@@ -29,6 +29,155 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
+  /api/v1/tasks:
+    get:
+      tags: [tasks]
+      summary: List tasks
+      parameters:
+        - in: query
+          name: filter
+          schema:
+            type: string
+            enum: [today, upcoming, starred, all, done]
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum: [work, personal, health, learning, home, all]
+        - in: query
+          name: query
+          schema:
+            type: string
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [time, priority]
+      responses:
+        "200":
+          description: Task list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      tags: [tasks]
+      summary: Create task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskRequest"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/v1/tasks/{taskId}:
+    parameters:
+      - in: path
+        name: taskId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [tasks]
+      summary: Get task by id
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      tags: [tasks]
+      summary: Update task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskRequest"
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      tags: [tasks]
+      summary: Delete task
+      responses:
+        "204":
+          description: Task deleted
+  /api/v1/tasks/{taskId}/subtasks:
+    parameters:
+      - in: path
+        name: taskId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags: [subtasks]
+      summary: Add subtask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddSubtaskRequest"
+      responses:
+        "201":
+          description: Subtask created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subtask"
+  /api/v1/tasks/{taskId}/subtasks/{subtaskId}/toggle:
+    parameters:
+      - in: path
+        name: taskId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: subtaskId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags: [subtasks]
+      summary: Toggle subtask status
+      responses:
+        "200":
+          description: Subtask updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subtask"
   /srv/v1:
     get:
       tags: [service]
@@ -68,4 +217,118 @@ components:
       required: [message]
       properties:
         message:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    TaskCategory:
+      type: string
+      enum: [work, personal, health, learning, home]
+    TaskPriority:
+      type: string
+      enum: [high, med, low]
+    Subtask:
+      type: object
+      required: [id, title, done]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        done:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Task:
+      type: object
+      required:
+        [
+          id,
+          title,
+          category,
+          priority,
+          date,
+          time,
+          notes,
+          done,
+          starred,
+          subtasks,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        category:
+          $ref: "#/components/schemas/TaskCategory"
+        priority:
+          $ref: "#/components/schemas/TaskPriority"
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          pattern: '^([01]\\d|2[0-3]):[0-5]\\d$'
+        notes:
+          type: string
+        done:
+          type: boolean
+        starred:
+          type: boolean
+        subtasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subtask"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateTaskRequest:
+      type: object
+      required: [title, category, priority]
+      properties:
+        title:
+          type: string
+        category:
+          $ref: "#/components/schemas/TaskCategory"
+        priority:
+          $ref: "#/components/schemas/TaskPriority"
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          $ref: "#/components/schemas/TaskCategory"
+        priority:
+          $ref: "#/components/schemas/TaskPriority"
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        notes:
+          type: string
+        done:
+          type: boolean
+        starred:
+          type: boolean
+    AddSubtaskRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
           type: string

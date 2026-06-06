@@ -1,136 +1,151 @@
-import { baseApi } from '../../../shared/api/baseApi';
-import { todayISO } from '../../../shared/lib/date/date';
-import { seedTasks } from '../model/constants';
-import type { CreateTaskDto, Task, TaskFilters, TaskPriority } from '../model/types';
+import { baseApi } from "../../../shared/api/baseApi";
+import type {
+  CreateTaskDto,
+  Task,
+  TaskFilters,
+  TaskPriority,
+} from "../model/types";
 
-const STORAGE_KEY = 'tk_tasks_v1';
+type ApiCacheState = {
+  api?: {
+    queries?: Record<string, { data?: unknown }>;
+  };
+};
 
-const readTasks = (): Task[] => {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return seedTasks;
-
-  try {
-    return JSON.parse(raw) as Task[];
-  } catch {
-    return seedTasks;
+const findCachedTask = (state: unknown, id: string): Task | undefined => {
+  const queries = Object.values((state as ApiCacheState).api?.queries ?? {});
+  for (const query of queries) {
+    const data = query.data;
+    if (Array.isArray(data)) {
+      const task = data.find(
+        (item): item is Task =>
+          typeof item === "object" &&
+          item !== null &&
+          "id" in item &&
+          item.id === id,
+      );
+      if (task) return task;
+    }
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "id" in data &&
+      data.id === id
+    ) {
+      return data as Task;
+    }
   }
-};
-
-const writeTasks = (tasks: Task[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-};
-
-const uid = (prefix = 't') => `${prefix}${Math.random().toString(36).slice(2, 9)}`;
-
-const applyFilters = (tasks: Task[], filters?: TaskFilters) => {
-  const currentFilters = filters ?? {};
-  const priorityOrder: Record<TaskPriority, number> = { high: 0, med: 1, low: 2 };
-
-  return tasks
-    .filter((task) => {
-      if (currentFilters.filter === 'today' && task.date !== todayISO()) return false;
-      if (currentFilters.filter === 'upcoming' && !(task.date > todayISO())) return false;
-      if (currentFilters.filter === 'done' && !task.done) return false;
-      if (currentFilters.filter === 'starred' && !task.starred) return false;
-      if (currentFilters.category && currentFilters.category !== 'all' && task.category !== currentFilters.category) return false;
-      if (currentFilters.query && !task.title.toLowerCase().includes(currentFilters.query.toLowerCase())) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      if (a.done !== b.done) return a.done ? 1 : -1;
-      if (currentFilters.sort === 'priority') return priorityOrder[a.priority] - priorityOrder[b.priority];
-      return `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`);
-    });
+  return undefined;
 };
 
 export const tasksApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getTasks: builder.query<Task[], TaskFilters | undefined>({
-      queryFn: (filters) => ({ data: applyFilters(readTasks(), filters) }),
-      providesTags: ['Task'],
+      query: (filters) => ({
+        url: "/tasks",
+        params: {
+          filter: filters?.filter,
+          category: filters?.category,
+          query: filters?.query || undefined,
+          sort: filters?.sort,
+        },
+      }),
+      providesTags: ["Task"],
     }),
     getTaskById: builder.query<Task | undefined, string>({
-      queryFn: (id) => ({ data: readTasks().find((task) => task.id === id) }),
-      providesTags: (_result, _error, id) => [{ type: 'Task', id }],
+      query: (id) => `/tasks/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Task", id }],
     }),
     createTask: builder.mutation<Task, CreateTaskDto>({
-      queryFn: (payload) => {
-        const now = new Date();
-        const task: Task = {
-          id: uid(),
-          title: payload.title,
-          category: payload.category,
-          priority: payload.priority,
-          date: todayISO(),
-          time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
-          notes: '',
-          done: false,
-          starred: false,
-          subtasks: [],
-        };
-        writeTasks([task, ...readTasks()]);
-        return { data: task };
-      },
-      invalidatesTags: ['Task'],
+      query: (payload) => ({
+        url: "/tasks",
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: ["Task"],
     }),
-    toggleTaskDone: builder.mutation<Task | undefined, string>({
-      queryFn: (id) => {
-        let updated: Task | undefined;
-        const tasks = readTasks().map((task) => {
-          if (task.id !== id) return task;
-          updated = { ...task, done: !task.done };
-          return updated;
+    toggleTaskDone: builder.mutation<Task, string>({
+      async queryFn(id, api, _extraOptions, baseQuery) {
+        let task = findCachedTask(api.getState(), id);
+        if (!task) {
+          const result = await baseQuery(`/tasks/${id}`);
+          if (result.error) return { error: result.error };
+          task = result.data as Task;
+        }
+
+        const result = await baseQuery({
+          url: `/tasks/${id}`,
+          method: "PATCH",
+          body: { done: !task.done },
         });
-        writeTasks(tasks);
-        return { data: updated };
+        if (result.error) return { error: result.error };
+        return { data: result.data as Task };
       },
-      invalidatesTags: ['Task'],
+      invalidatesTags: (_result, _error, id) => [{ type: "Task", id }, "Task"],
     }),
-    toggleTaskStar: builder.mutation<Task | undefined, string>({
-      queryFn: (id) => {
-        let updated: Task | undefined;
-        const tasks = readTasks().map((task) => {
-          if (task.id !== id) return task;
-          updated = { ...task, starred: !task.starred };
-          return updated;
+    toggleTaskStar: builder.mutation<Task, string>({
+      async queryFn(id, api, _extraOptions, baseQuery) {
+        let task = findCachedTask(api.getState(), id);
+        if (!task) {
+          const result = await baseQuery(`/tasks/${id}`);
+          if (result.error) return { error: result.error };
+          task = result.data as Task;
+        }
+
+        const result = await baseQuery({
+          url: `/tasks/${id}`,
+          method: "PATCH",
+          body: { starred: !task.starred },
         });
-        writeTasks(tasks);
-        return { data: updated };
+        if (result.error) return { error: result.error };
+        return { data: result.data as Task };
       },
-      invalidatesTags: ['Task'],
+      invalidatesTags: (_result, _error, id) => [{ type: "Task", id }, "Task"],
     }),
-    setTaskPriority: builder.mutation<Task | undefined, { id: string; priority: TaskPriority }>({
-      queryFn: ({ id, priority }) => {
-        let updated: Task | undefined;
-        const tasks = readTasks().map((task) => {
-          if (task.id !== id) return task;
-          updated = { ...task, priority };
-          return updated;
-        });
-        writeTasks(tasks);
-        return { data: updated };
-      },
-      invalidatesTags: ['Task'],
+    setTaskPriority: builder.mutation<
+      Task,
+      { id: string; priority: TaskPriority }
+    >({
+      query: ({ id, priority }) => ({
+        url: `/tasks/${id}`,
+        method: "PATCH",
+        body: { priority },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Task", id },
+        "Task",
+      ],
     }),
-    addSubtask: builder.mutation<Task | undefined, { taskId: string; title: string }>({
-      queryFn: ({ taskId, title }) => {
-        let updated: Task | undefined;
-        const tasks = readTasks().map((task) => {
-          if (task.id !== taskId) return task;
-          updated = { ...task, subtasks: [...task.subtasks, { id: uid('s'), title, done: false }] };
-          return updated;
-        });
-        writeTasks(tasks);
-        return { data: updated };
-      },
-      invalidatesTags: ['Task'],
+    addSubtask: builder.mutation<Task, { taskId: string; title: string }>({
+      query: ({ taskId, title }) => ({
+        url: `/tasks/${taskId}/subtasks`,
+        method: "POST",
+        body: { title },
+      }),
+      invalidatesTags: (_result, _error, { taskId }) => [
+        { type: "Task", id: taskId },
+        "Task",
+      ],
+    }),
+    toggleSubtask: builder.mutation<
+      Task,
+      { taskId: string; subtaskId: string }
+    >({
+      query: ({ taskId, subtaskId }) => ({
+        url: `/tasks/${taskId}/subtasks/${subtaskId}/toggle`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (_result, _error, { taskId }) => [
+        { type: "Task", id: taskId },
+        "Task",
+      ],
     }),
     deleteTask: builder.mutation<{ id: string }, string>({
-      queryFn: (id) => {
-        writeTasks(readTasks().filter((task) => task.id !== id));
-        return { data: { id } };
-      },
-      invalidatesTags: ['Task'],
+      query: (id) => ({
+        url: `/tasks/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Task"],
     }),
   }),
 });
@@ -143,5 +158,6 @@ export const {
   useToggleTaskStarMutation,
   useSetTaskPriorityMutation,
   useAddSubtaskMutation,
+  useToggleSubtaskMutation,
   useDeleteTaskMutation,
 } = tasksApi;
