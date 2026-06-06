@@ -5,6 +5,6 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_URL ?? "http://localhost:8080/api/v1",
   }),
-  tagTypes: ["Task"],
+  tagTypes: ["Task", "Stats"],
   endpoints: () => ({}),
 });

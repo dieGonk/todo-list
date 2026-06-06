@@ -62,7 +62,7 @@ export const tasksApi = baseApi.injectEndpoints({
         method: "POST",
         body: payload,
       }),
-      invalidatesTags: ["Task"],
+      invalidatesTags: ["Task", "Stats"],
     }),
     toggleTaskDone: builder.mutation<Task, string>({
       async queryFn(id, api, _extraOptions, baseQuery) {
@@ -81,7 +81,11 @@ export const tasksApi = baseApi.injectEndpoints({
         if (result.error) return { error: result.error };
         return { data: result.data as Task };
       },
-      invalidatesTags: (_result, _error, id) => [{ type: "Task", id }, "Task"],
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Task", id },
+        "Task",
+        "Stats",
+      ],
     }),
     toggleTaskStar: builder.mutation<Task, string>({
       async queryFn(id, api, _extraOptions, baseQuery) {
@@ -145,7 +149,7 @@ export const tasksApi = baseApi.injectEndpoints({
         url: `/tasks/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Task"],
+      invalidatesTags: ["Task", "Stats"],
     }),
   }),
 });

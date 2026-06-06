@@ -12,7 +12,9 @@ import (
 	"todo-back/internal/config"
 	"todo-back/internal/infrastructure/postgres"
 	"todo-back/internal/interfaces/http/router"
+	statsrepo "todo-back/internal/repository/stats"
 	taskrepo "todo-back/internal/repository/task"
+	statsusecase "todo-back/internal/usecase/stats"
 	taskusecase "todo-back/internal/usecase/task"
 )
 
@@ -31,10 +33,13 @@ func New(ctx context.Context, cfg *config.Config, log *slog.Logger) (*App, error
 
 	taskRepository := taskrepo.NewPostgresRepository(db)
 	taskService := taskusecase.NewService(taskRepository)
+	statsRepository := statsrepo.NewPostgresRepository(db)
+	statsService := statsusecase.NewService(statsRepository)
 
 	httpRouter := router.New(router.Dependencies{
-		Log:         log,
-		TaskUseCase: taskService,
+		Log:          log,
+		TaskUseCase:  taskService,
+		StatsUseCase: statsService,
 	})
 
 	server := &http.Server{

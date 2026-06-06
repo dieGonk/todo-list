@@ -10,13 +10,15 @@ import (
 	"todo-back/internal/interfaces/http/check"
 	"todo-back/internal/interfaces/http/docs"
 	"todo-back/internal/interfaces/http/handlers"
+	statshandler "todo-back/internal/interfaces/http/handlers/stats"
 	taskhandler "todo-back/internal/interfaces/http/handlers/task"
 	httpmiddleware "todo-back/internal/interfaces/http/middleware"
 )
 
 type Dependencies struct {
-	Log         *slog.Logger
-	TaskUseCase taskhandler.UseCase
+	Log          *slog.Logger
+	TaskUseCase  taskhandler.UseCase
+	StatsUseCase statshandler.UseCase
 }
 
 func New(deps Dependencies) http.Handler {
@@ -35,6 +37,7 @@ func New(deps Dependencies) http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/", handlers.Message("front to back api v1"))
 		r.Route("/tasks", taskhandler.NewHandler(deps.TaskUseCase, deps.Log).Register)
+		r.Route("/stats", statshandler.NewHandler(deps.StatsUseCase, deps.Log).Register)
 	})
 
 	r.Route("/srv/v1", func(r chi.Router) {

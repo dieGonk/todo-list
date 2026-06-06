@@ -178,6 +178,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Subtask"
+  /api/v1/stats/productivity:
+    get:
+      tags: [stats]
+      summary: Productivity statistics for the last 7 days
+      responses:
+        "200":
+          description: Productivity statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductivityResponse"
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /srv/v1:
     get:
       tags: [service]
@@ -332,3 +349,47 @@ components:
       properties:
         title:
           type: string
+    ProductivitySummary:
+      type: object
+      required: [inProgress, completed, upcoming]
+      properties:
+        inProgress:
+          type: integer
+        completed:
+          type: integer
+        upcoming:
+          type: integer
+    ProductivityRange:
+      type: object
+      required: [from, to]
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+    ProductivityPoint:
+      type: object
+      required: [date, label, completed]
+      properties:
+        date:
+          type: string
+          format: date
+        label:
+          type: string
+          example: Пн
+        completed:
+          type: integer
+    ProductivityResponse:
+      type: object
+      required: [summary, range, points]
+      properties:
+        summary:
+          $ref: "#/components/schemas/ProductivitySummary"
+        range:
+          $ref: "#/components/schemas/ProductivityRange"
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductivityPoint"
