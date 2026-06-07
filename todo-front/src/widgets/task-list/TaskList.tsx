@@ -12,6 +12,7 @@ import type {
 } from "../../entities/task/model/types";
 import { TaskCard } from "../../entities/task/ui/TaskCard";
 import { CreateTaskForm } from "../../features/create-task/CreateTaskForm";
+import { DropdownSelect } from "../../shared/ui/DropdownSelect";
 import { EmptyState } from "../../shared/ui/EmptyState";
 import { Icon } from "../../shared/ui/Icon";
 
@@ -30,6 +31,13 @@ const filters: Array<{
 const filterKeys = filters.map((item) => item.key);
 const categoryKeys = Object.keys(taskCategories) as TaskCategory[];
 const sortKeys: Array<NonNullable<TaskFilters["sort"]>> = ["time", "priority"];
+const sortOptions: Array<{
+  value: NonNullable<TaskFilters["sort"]>;
+  label: string;
+}> = [
+  { value: "time", label: "По времени" },
+  { value: "priority", label: "По приоритету" },
+];
 
 const parseFilter = (
   value: string | null,
@@ -89,14 +97,15 @@ export const TaskList = ({ query }: TaskListProps) => {
             {item.label}
           </button>
         ))}
-        <select
-          className="chip filters__sort"
+        <DropdownSelect
+          className="filters__sort"
           value={sort}
-          onChange={(event) => updateParam("sort", event.target.value)}
-        >
-          <option value="time">По времени</option>
-          <option value="priority">По приоритету</option>
-        </select>
+          options={sortOptions}
+          onChange={(value) => updateParam("sort", value)}
+          menuAlign="right"
+          prefixIcon={<Icon name="filter" />}
+          ariaLabel="Сортировка задач"
+        />
       </div>
       <div className="filters filters--compact">
         <button

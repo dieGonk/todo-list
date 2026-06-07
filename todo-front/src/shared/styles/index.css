@@ -670,12 +670,13 @@ svg {
 .add-bar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     margin-bottom: 20px;
-    padding: 8px 8px 8px 18px;
+    padding: 8px 8px 8px 20px;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--r-lg);
+    transition: 0.16s;
 }
 .add-bar:focus-within {
     border-color: var(--gold-line);
@@ -685,37 +686,104 @@ svg {
     height: 24px;
     display: grid;
     place-items: center;
+    flex: none;
     border: 2px dashed var(--text-4);
     border-radius: 8px;
     color: var(--text-3);
+}
+.add-bar__plus svg {
+    width: 14px;
+    height: 14px;
 }
 .add-bar input {
     flex: 1;
     min-width: 160px;
     height: 44px;
-    background: transparent;
+    background: none;
+    font-size: 15px;
 }
-.add-bar select,
-.filters select {
+.add-bar input::placeholder {
+    color: var(--text-3);
+}
+.dropdown-select {
+    position: relative;
+    flex: none;
+}
+.dropdown-select__button {
     height: 38px;
-    padding: 0 12px;
-    border-radius: 12px;
+    padding: 8px 12px;
+    white-space: nowrap;
+}
+.dropdown-select__button svg,
+.dropdown-select__option svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+}
+.dropdown-select__chevron {
+    width: 13px !important;
+    height: 13px !important;
+    color: var(--text-3);
+}
+.dropdown-select__label {
+    line-height: 1;
+}
+.dropdown-select__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 60;
+    min-width: 170px;
+    padding: 6px;
+    border: 1px solid var(--line-2);
+    border-radius: 14px;
     background: var(--surface-2);
-    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+    animation: pop 0.14s ease both;
+}
+.dropdown-select__menu--right {
+    right: 0;
+    left: auto;
+}
+.dropdown-select__option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 9px;
+    color: var(--text-2);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-align: left;
+    transition: 0.12s;
+}
+.dropdown-select__option:hover,
+.dropdown-select__option.selected {
+    background: var(--surface-3);
+    color: var(--text);
+}
+.add-bar__select {
+    min-width: 118px;
 }
 .add-bar__submit {
     height: 44px;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 0 20px;
+    padding: 0 22px;
     border-radius: 14px;
     background: linear-gradient(150deg, var(--gold-2), var(--gold-deep));
     color: #1a1407;
-    font-weight: 800;
+    font-size: 14px;
+    font-weight: 700;
+}
+.add-bar__submit svg {
+    width: 17px;
+    height: 17px;
 }
 .add-bar__submit:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: default;
 }
 .filters {
@@ -1104,6 +1172,16 @@ svg {
         transform: none;
     }
 }
+@keyframes pop {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
 
 @media (max-width: 980px) {
     .dashboard-grid,
@@ -1166,8 +1244,12 @@ svg {
     .add-bar input {
         flex-basis: calc(100% - 42px);
     }
-    .add-bar select {
+    .add-bar__select {
         flex: 1;
+    }
+    .add-bar__select .dropdown-select__button {
+        width: 100%;
+        justify-content: center;
     }
     .add-bar__submit {
         width: 100%;
